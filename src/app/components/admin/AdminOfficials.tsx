@@ -1,0 +1,114 @@
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
+import { Button } from '@/app/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
+import { ChevronLeft, ShieldCheck, Phone, Mail, Building } from 'lucide-react';
+import { Badge } from '@/app/components/ui/badge';
+
+interface Official {
+  id: string;
+  phone: string;
+  full_name: string;
+  email: string;
+  department: string;
+  staff_id: string;
+  role: string;
+  created_at: string;
+}
+
+export function AdminOfficials() {
+  const navigate = useNavigate();
+  const [officials, setOfficials] = useState<Official[]>([]);
+
+  useEffect(() => {
+    // Check admin session
+    const adminSession = localStorage.getItem('gts_admin_session');
+    if (!adminSession) {
+      navigate('/admin/login');
+      return;
+    }
+
+    loadOfficials();
+  }, [navigate]);
+
+  const loadOfficials = () => {
+    try {
+      const users = JSON.parse(localStorage.getItem('gts_users') || '[]');
+      const officialList = users.filter((u: any) => u.role === 'official');
+      setOfficials(officialList);
+    } catch (error) {
+      console.error('Error loading officials:', error);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100 p-3">
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-3">
+          <Button variant="ghost" onClick={() => navigate('/admin/dashboard')} className="h-9">
+            <ChevronLeft className="w-4 h-4 mr-1" />
+            Back to Dashboard
+          </Button>
+        </div>
+
+        <Card>
+          <CardHeader className="p-4">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5" />
+              All Officials ({officials.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4">
+            {officials.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <ShieldCheck className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                <p className="text-sm">No officials registered yet</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {officials.map((official, index) => (
+                  <Card key={official.id || index} className="bg-green-50 border-green-200">
+                    <CardContent className="p-3 space-y-2">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                            <ShieldCheck className="w-5 h-5 text-white" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-sm">{official.full_name}</p>
+                            <Badge variant="secondary" className="text-xs bg-green-200">Official</Badge>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 gap-2 text-xs">
+                        <div className="flex items-center gap-2 text-gray-700">
+                          <Phone className="w-3.5 h-3.5" />
+                          <span>{official.phone}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-gray-700">
+                          <Mail className="w-3.5 h-3.5" />
+                          <span>{official.email}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-gray-700">
+                          <Building className="w-3.5 h-3.5" />
+                          <span>{official.department} - ID: {official.staff_id}</span>
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-t border-green-300">
+                        <p className="text-xs text-gray-600">
+                          Registered: {new Date(official.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,8 @@
+# Supabase Configuration
+# Edge functions disabled - app uses client-side authentication and localStorage
+
+[project]
+project_id = "disabled"
+
+[functions]
+enabled = false
